@@ -181,20 +181,40 @@ async function handleStripeWebhook(rawBody, signature) {
     throw err;
   }
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    const sessionId = session.id;
+  // Ensure idempotency at the event level (Stripe retries webhooks).
+  if (event?.id) {
+    const alreadyProcessed = await StripeEvent.exists({ eventId: event.id });
+    if (alreadyProcessed) return { received: true, ignored: 'duplicate_event' };
+  }
 
-    const pi = session.payment_intent;
-    const paymentIntentId = typeof pi === 'string' ? pi : pi?.id;
-    const customerId =
-      typeof session.customer === 'string' ? session.customer : session.customer?.id || undefined;
+  // Normalize the checkout session object across event types.
+  const session = event?.data?.object;
+  const sessionId = session?.id;
+  if (!sessionId) {
+    return { received: true, ignored: 'missing_session_id' };
+  }
+
+  const pi = session.payment_intent;
+  const paymentIntentId = typeof pi === 'string' ? pi : pi?.id;
+  const customerId =
+    typeof session.customer === 'string' ? session.customer : session.customer?.id || undefined;
+
+  // Decide how to update the transaction status.
+  const isSuccessEvent =
+    event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded';
+  const isFailedEvent =
+    event.type === 'checkout.session.async_payment_failed' || event.type === 'checkout.session.payment_failed';
+  const isExpiredEvent =
+    event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed';
+
+  if (isSuccessEvent || isFailedEvent || isExpiredEvent) {
+    const nextStatus = isSuccessEvent ? 'completed' : isFailedEvent ? 'failed' : 'cancelled';
 
     const tx = await CreditTransaction.findOneAndUpdate(
       { stripeCheckoutSessionId: sessionId, status: 'pending' },
       {
         $set: {
-          status: 'completed',
+          status: nextStatus,
           stripePaymentIntentId: paymentIntentId || undefined,
           stripeCustomerId: customerId || undefined,
         },
@@ -202,31 +222,26 @@ async function handleStripeWebhook(rawBody, signature) {
       { new: true }
     );
 
+    // If it's not pending anymore, it's either already processed or we never created a tx.
     if (!tx) {
-      const existing = await CreditTransaction.findOne({ stripeCheckoutSessionId: sessionId });
-      if (existing?.status === 'completed') {
-        return { received: true, duplicate: true };
-      }
-      return { received: true, skipped: 'unknown session' };
+      return { received: true, skipped: 'unknown or non-pending session' };
     }
 
-    try {
+    if (nextStatus === 'completed') {
       await User.updateOne({ _id: tx.userId }, { $inc: { credits: tx.credits } });
-    } catch (err) {
-      await CreditTransaction.updateOne({ _id: tx._id }, { $set: { status: 'pending' } });
-      throw err;
     }
 
+    // Mark Stripe event as processed only after we finished updating records.
     try {
       await StripeEvent.create({ eventId: event.id });
     } catch (e) {
       if (e && e.code === 11000) {
-        return { received: true, completed: true, duplicateEvent: true };
+        return { received: true, completed: nextStatus === 'completed', duplicateEvent: true };
       }
       throw e;
     }
 
-    return { received: true, completed: true };
+    return { received: true, updated: nextStatus };
   }
 
   return { received: true, ignored: event.type };
