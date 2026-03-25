@@ -28,6 +28,7 @@ const options = {
             email: { type: 'string', example: 'user@example.com' },
             username: { type: 'string', example: 'player1' },
             role: { type: 'string', enum: ['user', 'admin'], example: 'user' },
+            credits: { type: 'number', example: 0 },
             createdAt: { type: 'string', format: 'date-time' },
             updatedAt: { type: 'string', format: 'date-time' },
           },

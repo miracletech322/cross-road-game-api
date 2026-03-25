@@ -16,6 +16,7 @@ function toPublicUser(userDoc) {
     email: obj.email,
     username: obj.username,
     role: obj.role,
+    credits: typeof obj.credits === 'number' ? obj.credits : 0,
     createdAt: obj.createdAt,
     updatedAt: obj.updatedAt,
   };
@@ -122,7 +123,7 @@ async function getById(id) {
     throw err;
   }
 
-  const user = await User.findById(id).select('email username role createdAt updatedAt');
+  const user = await User.findById(id).select('email username role credits createdAt updatedAt');
   if (!user) {
     const err = new Error('user not found');
     err.statusCode = 404;
@@ -133,7 +134,7 @@ async function getById(id) {
 }
 
 async function listAll() {
-  const users = await User.find().select('email username role createdAt updatedAt').sort({ createdAt: -1 });
+  const users = await User.find().select('email username role credits createdAt updatedAt').sort({ createdAt: -1 });
   return users.map(toPublicUser);
 }
 
@@ -184,12 +185,12 @@ async function updateById(id, { email, username, role, password }) {
 
   await User.updateOne({ _id: id }, { $set: updates });
 
-  const updated = await User.findById(id).select('email username role createdAt updatedAt');
+  const updated = await User.findById(id).select('email username role credits createdAt updatedAt');
   return toPublicUser(updated);
 }
 
 async function deleteById(id) {
-  const deleted = await User.findByIdAndDelete(id).select('email username role');
+  const deleted = await User.findByIdAndDelete(id).select('email username role credits');
   if (!deleted) {
     const err = new Error('user not found');
     err.statusCode = 404;

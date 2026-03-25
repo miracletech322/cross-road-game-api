@@ -6,11 +6,14 @@ const swaggerUi = require('swagger-ui-express');
 const morgan = require('morgan');
 
 const apiRoutes = require('./routes/index.route');
+const creditWebhookRouter = require('./routes/credit.webhook.route');
 const { swaggerSpec } = require('./swagger/swagger');
 
 const app = express();
 
 app.use(cors());
+// Stripe webhook must receive raw body; mount before express.json()
+app.use('/api/credits/webhook', express.raw({ type: 'application/json' }), creditWebhookRouter);
 app.use(express.json());
 app.use(morgan('combined'));
 
