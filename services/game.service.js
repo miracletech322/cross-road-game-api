@@ -95,7 +95,7 @@ async function submitGameEnd(userId, { maxScore: scoreRaw }) {
 
   const updated = await User.findOneAndUpdate(
     { _id: userId },
-    [{ $set: { maxScore: { $max: [{ $ifNull: ['$maxScore', 0] }, n] } } }],
+    { $max: { maxScore: n } },
     { new: true }
   ).select('credits maxScore shieldCount purchasedCharacterIds adblockEnabled');
 
