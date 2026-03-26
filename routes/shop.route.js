@@ -32,26 +32,6 @@ router.post('/shield', authenticate, shopController.buyShield);
 
 /**
  * @openapi
- * /api/shop/buyback:
- *   post:
- *     tags: [Shop]
- *     summary: Revive after death (buyback) — deducts credits if enough
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Revived
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/BuybackResponse'
- *       402:
- *         description: Insufficient credits
- */
-router.post('/buyback', authenticate, shopController.reviveBuyback);
-
-/**
- * @openapi
  * /api/shop/character:
  *   post:
  *     tags: [Shop]

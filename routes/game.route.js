@@ -53,4 +53,56 @@ router.get('/info', authenticate, gameController.getInfo);
  */
 router.post('/end', authenticate, gameController.submitGameEnd);
 
+/**
+ * @openapi
+ * /api/game/use/shield:
+ *   post:
+ *     tags: [Game]
+ *     summary: Use one shield token (decreases shieldCount by 1)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Shield used; returns updated game info
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/GameInfoResponse'
+ *                 - type: object
+ *                   properties:
+ *                     used: { type: boolean, example: true }
+ *                     item: { type: string, example: shield }
+ *                   required: [used, item]
+ *       402:
+ *         description: No shield available
+ */
+router.post('/use/shield', authenticate, gameController.useShield);
+
+/**
+ * @openapi
+ * /api/game/use/buyback:
+ *   post:
+ *     tags: [Game]
+ *     summary: Revive (deducts credits if enough)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Revive successful; returns updated game info
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/GameInfoResponse'
+ *                 - type: object
+ *                   properties:
+ *                     used: { type: boolean, example: true }
+ *                     item: { type: string, example: buyback }
+ *                   required: [used, item]
+ *       402:
+ *         description: Insufficient credits
+ */
+router.post('/use/buyback', authenticate, gameController.useBuyback);
+
 module.exports = router;

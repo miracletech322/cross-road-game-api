@@ -50,27 +50,6 @@ async function buyShield(userId) {
 }
 
 /**
- * Revive (buyback): pay credits once to continue after death. No persistent counter.
- */
-async function reviveBuyback(userId) {
-  const cost = getCost('buyback');
-  const user = await User.findOneAndUpdate(
-    { _id: userId, credits: { $gte: cost } },
-    { $inc: { credits: -cost } },
-    { new: true }
-  ).select('_id');
-
-  if (!user) {
-    const err = new Error('Insufficient credits');
-    err.statusCode = 402;
-    throw err;
-  }
-
-  const purchaseId = await recordPurchase(userId, 'buyback', cost, { action: 'revive' });
-  return { type: 'buyback', creditsSpent: cost, revived: true, purchaseId };
-}
-
-/**
  * Buy character: must pass characterId; cannot buy same character twice (atomic $nin + $addToSet).
  */
 async function buyCharacter(userId, characterId) {
@@ -148,7 +127,6 @@ async function buyAdblock(userId) {
 
 module.exports = {
   buyShield,
-  reviveBuyback,
   buyCharacter,
   buyAdblock,
   COSTS,

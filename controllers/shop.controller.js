@@ -7,12 +7,6 @@ const buyShield = asyncHandler(async (req, res) => {
   return res.json(result);
 });
 
-/** Revive after death (buyback): deduct credits if enough. */
-const reviveBuyback = asyncHandler(async (req, res) => {
-  const result = await shopService.reviveBuyback(req.user.id);
-  return res.json(result);
-});
-
 const buyCharacter = asyncHandler(async (req, res) => {
   const { characterId } = req.body || {};
   const result = await shopService.buyCharacter(req.user.id, characterId);
@@ -26,7 +20,6 @@ const buyAdblock = asyncHandler(async (req, res) => {
 
 module.exports = {
   buyShield,
-  reviveBuyback,
   buyCharacter,
   buyAdblock,
 };

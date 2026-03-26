@@ -97,16 +97,6 @@ const options = {
           },
           required: ['type', 'creditsSpent', 'purchaseId'],
         },
-        BuybackResponse: {
-          type: 'object',
-          properties: {
-            type: { type: 'string', enum: ['buyback'] },
-            creditsSpent: { type: 'number', example: 15 },
-            revived: { type: 'boolean', example: true },
-            purchaseId: { type: 'string' },
-          },
-          required: ['type', 'creditsSpent', 'revived', 'purchaseId'],
-        },
         GameInfoResponse: {
           type: 'object',
           properties: {

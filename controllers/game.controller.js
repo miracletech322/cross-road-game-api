@@ -13,7 +13,19 @@ const submitGameEnd = asyncHandler(async (req, res) => {
   return res.json(info);
 });
 
+const useShield = asyncHandler(async (req, res) => {
+  const result = await gameService.useShield(req.user.id);
+  return res.json(result);
+});
+
+const useBuyback = asyncHandler(async (req, res) => {
+  const result = await gameService.useBuyback(req.user.id);
+  return res.json(result);
+});
+
 module.exports = {
   getInfo,
   submitGameEnd,
+  useShield,
+  useBuyback,
 };
