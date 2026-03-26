@@ -160,6 +160,16 @@ async function listAllTransactions({ limit = 100 } = {}) {
   return rows.map((t) => formatTransaction(t, { withUser: true }));
 }
 
+/** Admin: Stripe credit purchases for a single user (no user join). */
+async function listTransactionsByUserId(userId, { limit = 100 } = {}) {
+  const take = Math.min(Math.max(Number(limit) || 100, 1), 500);
+  const rows = await CreditTransaction.find({ userId })
+    .sort({ createdAt: -1 })
+    .limit(take)
+    .lean();
+  return rows.map((t) => formatTransaction(t));
+}
+
 /**
  * Handle Stripe webhook (raw body required). Returns true if handled.
  */
@@ -252,5 +262,6 @@ module.exports = {
   getBalance,
   listMyTransactions,
   listAllTransactions,
+  listTransactionsByUserId,
   handleStripeWebhook,
 };

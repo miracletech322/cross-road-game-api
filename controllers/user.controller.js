@@ -39,12 +39,19 @@ const deleteUser = asyncHandler(async (req, res) => {
   return res.json({ user });
 });
 
+const getUserHistory = asyncHandler(async (req, res) => {
+  const { limit } = req.query || {};
+  const data = await userService.getUserHistory(req.params.id, { limit });
+  return res.json(data);
+});
+
 module.exports = {
   register,
   login,
   getMe,
   listUsers,
   getUserById,
+  getUserHistory,
   updateUser,
   deleteUser,
 };

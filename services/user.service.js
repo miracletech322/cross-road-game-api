@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const User = require('../models/user.model');
+const creditService = require('./credit.service');
+const shopService = require('./shop.service');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
@@ -200,6 +202,21 @@ async function deleteById(id) {
   return toPublicUser(deleted);
 }
 
+async function getUserHistory(userId, { limit = 100 } = {}) {
+  const exists = await User.findById(userId).select('_id');
+  if (!exists) {
+    const err = new Error('user not found');
+    err.statusCode = 404;
+    throw err;
+  }
+  const take = Math.min(Math.max(Number(limit) || 100, 1), 500);
+  const [creditTransactions, shopPurchases] = await Promise.all([
+    creditService.listTransactionsByUserId(userId, { limit: take }),
+    shopService.listPurchasesByUserId(userId, { limit: take }),
+  ]);
+  return { creditTransactions, shopPurchases };
+}
+
 module.exports = {
   register,
   login,
@@ -207,5 +224,6 @@ module.exports = {
   listAll,
   updateById,
   deleteById,
+  getUserHistory,
 };
 

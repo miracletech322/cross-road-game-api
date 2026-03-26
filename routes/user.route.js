@@ -157,6 +157,63 @@ router.get('/', authenticate, requireAdmin, userController.listUsers);
 
 /**
  * @openapi
+ * /api/users/{id}/history:
+ *   get:
+ *     tags: [Users]
+ *     summary: Credit + shop purchase history for a user (admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 100
+ *         description: Max rows per list (1–500)
+ *     responses:
+ *       200:
+ *         description: Stripe credit transactions and shop purchases for the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 creditTransactions:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 shopPurchases:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       401:
+ *         description: Missing or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get('/:id/history', authenticate, requireAdmin, userController.getUserHistory);
+
+/**
+ * @openapi
  * /api/users/{id}:
  *   get:
  *     tags: [Users]

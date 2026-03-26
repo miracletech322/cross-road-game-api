@@ -28,6 +28,28 @@ async function recordPurchase(userId, type, creditsSpent, meta) {
   return doc._id.toString();
 }
 
+function formatPurchase(p) {
+  if (!p) return null;
+  return {
+    id: p._id?.toString ? p._id.toString() : String(p._id),
+    userId: p.userId?.toString ? p.userId.toString() : String(p.userId),
+    type: p.type,
+    creditsSpent: p.creditsSpent,
+    meta: p.meta && typeof p.meta === 'object' ? p.meta : {},
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
+  };
+}
+
+async function listPurchasesByUserId(userId, { limit = 100 } = {}) {
+  const take = Math.min(Math.max(Number(limit) || 100, 1), 500);
+  const rows = await ShopPurchase.find({ userId })
+    .sort({ createdAt: -1 })
+    .limit(take)
+    .lean();
+  return rows.map((p) => formatPurchase(p));
+}
+
 /**
  * Buy shield: +1 shield count, deduct credits.
  */
@@ -129,5 +151,6 @@ module.exports = {
   buyShield,
   buyCharacter,
   buyAdblock,
+  listPurchasesByUserId,
   COSTS,
 };
