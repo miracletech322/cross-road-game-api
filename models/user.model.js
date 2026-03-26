@@ -49,7 +49,7 @@ const userSchema = new mongoose.Schema(
     /** Character ids the user has purchased (unique). */
     purchasedCharacterIds: {
       type: [String],
-      default: [],
+      default: ['chat_1'],
     },
     /** True after purchasing adblock once. */
     adblockEnabled: {
