@@ -87,6 +87,47 @@ const options = {
           },
           required: ['message'],
         },
+        ShopPurchaseResponse: {
+          type: 'object',
+          properties: {
+            type: { type: 'string', enum: ['shield', 'character', 'adblock'] },
+            creditsSpent: { type: 'number', example: 10 },
+            purchaseId: { type: 'string' },
+            characterId: { type: 'string' },
+          },
+          required: ['type', 'creditsSpent', 'purchaseId'],
+        },
+        BuybackResponse: {
+          type: 'object',
+          properties: {
+            type: { type: 'string', enum: ['buyback'] },
+            creditsSpent: { type: 'number', example: 15 },
+            revived: { type: 'boolean', example: true },
+            purchaseId: { type: 'string' },
+          },
+          required: ['type', 'creditsSpent', 'revived', 'purchaseId'],
+        },
+        GameInfoResponse: {
+          type: 'object',
+          properties: {
+            creditRemaining: { type: 'number', example: 100 },
+            maxScore: { type: 'number', example: 1234 },
+            shieldCount: { type: 'number', example: 2 },
+            boughtCharacters: {
+              type: 'array',
+              items: { type: 'string' },
+              example: ['char_1', 'char_2'],
+            },
+            adblockStatus: { type: 'boolean', example: false },
+          },
+          required: [
+            'creditRemaining',
+            'maxScore',
+            'shieldCount',
+            'boughtCharacters',
+            'adblockStatus',
+          ],
+        },
       },
     },
   },

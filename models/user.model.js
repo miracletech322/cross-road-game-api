@@ -34,6 +34,28 @@ const userSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    /** Best score ever (updated on game end). */
+    maxScore: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    /** Shields owned (incremented when purchasing shield). */
+    shieldCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    /** Character ids the user has purchased (unique). */
+    purchasedCharacterIds: {
+      type: [String],
+      default: [],
+    },
+    /** True after purchasing adblock once. */
+    adblockEnabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
