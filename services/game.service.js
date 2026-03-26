@@ -1,6 +1,6 @@
 const User = require('../models/user.model');
 
-function toGameInfo(userDoc) {
+function toGameInfo(userDoc, rank) {
   if (!userDoc) return null;
   const u = typeof userDoc.toObject === 'function' ? userDoc.toObject() : userDoc;
   return {
@@ -9,7 +9,24 @@ function toGameInfo(userDoc) {
     shieldCount: typeof u.shieldCount === 'number' ? u.shieldCount : 0,
     boughtCharacters: Array.isArray(u.purchasedCharacterIds) ? u.purchasedCharacterIds : [],
     adblockStatus: Boolean(u.adblockEnabled),
+    rank: typeof rank === 'number' ? rank : 1,
   };
+}
+
+async function getUserRank(userDoc) {
+  // Rank is based on (maxScore desc, _id asc). This matches `/api/game/rank` tie-breaking.
+  const score = typeof userDoc?.maxScore === 'number' ? userDoc.maxScore : 0;
+  const userObjectId = userDoc?._id;
+  if (!userObjectId) return 1;
+
+  const higherCount = await User.countDocuments({
+    $or: [
+      { maxScore: { $gt: score } },
+      { maxScore: score, _id: { $lt: userObjectId } },
+    ],
+  });
+
+  return higherCount + 1;
 }
 
 async function getInfo(userId) {
@@ -21,7 +38,8 @@ async function getInfo(userId) {
     err.statusCode = 404;
     throw err;
   }
-  return toGameInfo(user);
+  const rank = await getUserRank(user);
+  return toGameInfo(user, rank);
 }
 
 async function useShield(userId) {
@@ -39,10 +57,11 @@ async function useShield(userId) {
     throw err;
   }
 
+  const rank = await getUserRank(updated);
   return {
     used: true,
     item: 'shield',
-    ...toGameInfo(updated),
+    ...toGameInfo(updated, rank),
   };
 }
 
@@ -80,7 +99,8 @@ async function useBuyback(userId) {
     // Audit record failure should not break game revive flow.
   }
 
-  return { used: true, item: 'buyback', ...toGameInfo(updated) };
+  const rank = await getUserRank(updated);
+  return { used: true, item: 'buyback', ...toGameInfo(updated, rank) };
 }
 
 async function submitGameEnd(userId, { maxScore: scoreRaw }) {
@@ -105,14 +125,15 @@ async function submitGameEnd(userId, { maxScore: scoreRaw }) {
     throw err;
   }
 
-  return toGameInfo(updated);
+  const rank = await getUserRank(updated);
+  return toGameInfo(updated, rank);
 }
 
 async function getRank({ limit = 50 } = {}) {
   const take = Math.min(Math.max(Number(limit) || 50, 1), 200);
   const users = await User.find()
     .select('username maxScore')
-    .sort({ maxScore: -1, updatedAt: 1 })
+    .sort({ maxScore: -1, _id: 1 })
     .limit(take)
     .lean();
 

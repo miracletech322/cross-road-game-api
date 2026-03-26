@@ -109,6 +109,7 @@ const options = {
               example: ['char_1', 'char_2'],
             },
             adblockStatus: { type: 'boolean', example: false },
+            rank: { type: 'integer', example: 1 },
           },
           required: [
             'creditRemaining',
@@ -116,6 +117,7 @@ const options = {
             'shieldCount',
             'boughtCharacters',
             'adblockStatus',
+            'rank',
           ],
         },
         RankRow: {
