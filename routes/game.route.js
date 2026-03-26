@@ -12,6 +12,37 @@ const { authenticate } = require('../middleware/user.middleware');
 
 /**
  * @openapi
+ * /api/game/rank:
+ *   get:
+ *     tags: [Game]
+ *     summary: Public leaderboard by max score (no auth)
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *           minimum: 1
+ *           maximum: 200
+ *         description: Max rows to return
+ *     responses:
+ *       200:
+ *         description: Leaderboard rows
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ranking:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/RankRow'
+ *               required: [ranking]
+ */
+router.get('/rank', gameController.getRank);
+
+/**
+ * @openapi
  * /api/game/info:
  *   get:
  *     tags: [Game]

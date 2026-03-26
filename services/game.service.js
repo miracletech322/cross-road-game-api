@@ -108,10 +108,27 @@ async function submitGameEnd(userId, { maxScore: scoreRaw }) {
   return toGameInfo(updated);
 }
 
+async function getRank({ limit = 50 } = {}) {
+  const take = Math.min(Math.max(Number(limit) || 50, 1), 200);
+  const users = await User.find()
+    .select('username maxScore')
+    .sort({ maxScore: -1, updatedAt: 1 })
+    .limit(take)
+    .lean();
+
+  return users.map((u, idx) => ({
+    rank: idx + 1,
+    userId: u._id?.toString ? u._id.toString() : String(u._id),
+    username: u.username,
+    maxScore: typeof u.maxScore === 'number' ? u.maxScore : 0,
+  }));
+}
+
 module.exports = {
   getInfo,
   useShield,
   useBuyback,
   submitGameEnd,
+  getRank,
   toGameInfo,
 };

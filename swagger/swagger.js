@@ -118,6 +118,16 @@ const options = {
             'adblockStatus',
           ],
         },
+        RankRow: {
+          type: 'object',
+          properties: {
+            rank: { type: 'integer', example: 1 },
+            userId: { type: 'string', example: '65f1c1b2a3b4c5d6e7f8a901' },
+            username: { type: 'string', example: 'player1' },
+            maxScore: { type: 'number', example: 2300 },
+          },
+          required: ['rank', 'userId', 'username', 'maxScore'],
+        },
       },
     },
   },

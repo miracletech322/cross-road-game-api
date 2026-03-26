@@ -23,9 +23,16 @@ const useBuyback = asyncHandler(async (req, res) => {
   return res.json(result);
 });
 
+const getRank = asyncHandler(async (req, res) => {
+  const { limit } = req.query || {};
+  const ranking = await gameService.getRank({ limit });
+  return res.json({ ranking });
+});
+
 module.exports = {
   getInfo,
   submitGameEnd,
   useShield,
   useBuyback,
+  getRank,
 };
